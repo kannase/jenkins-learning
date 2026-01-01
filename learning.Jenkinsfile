@@ -12,7 +12,10 @@ pipeline {
             steps {
                 echo "Installing Python dependencies from requirements.txt..."
                 // Ensures your worker has paho-mqtt and pytest
-                sh 'python3 -m pip install --user -r requirements.txt'
+                sh '''
+            python3 -m venv venv
+            ./venv/bin/pip install -r requirements.txt
+        '''
             }
         }
 
@@ -41,7 +44,7 @@ pipeline {
                         // We run the simulator. If it's a loop, it runs until the test finishes
                         // Using timeout to prevent the pipeline from hanging forever
                         timeout(time: 5, unit: 'MINUTES') {
-                            sh "python3 iot_device_simulator.py --broker ${env.MQTT_BROKER}"
+                            sh "./venv/bin/python3 iot_device_simulator.py --broker ${env.MQTT_BROKER}"
                         }
                     }
                 }
@@ -52,7 +55,7 @@ pipeline {
                             try {
                                 echo "Running IoT Logic Validation..."
                                 // Runs your pytest and generates the XML results file
-                                sh "python3 -m pytest test_iot_logic.py --junitxml=results.xml"
+                                sh './venv/bin/python3 -m pytest --junitxml=results.xml'
                             } catch (Exception e) {
                                 echo "Tests failed: ${e.message}"
                                 currentBuild.result = 'UNSTABLE'
