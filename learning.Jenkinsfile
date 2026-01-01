@@ -52,7 +52,7 @@ pipeline {
                             try {
                                 echo "Running IoT Logic Validation..."
                                 // Runs your pytest and generates the XML results file
-                                sh "pytest test_iot_logic.py --junitxml=results.xml"
+                                sh "python3 -m pytest test_iot_logic.py --junitxml=results.xml"
                             } catch (Exception e) {
                                 echo "Tests failed: ${e.message}"
                                 currentBuild.result = 'UNSTABLE'
