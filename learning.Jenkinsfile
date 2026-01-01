@@ -14,9 +14,10 @@ pipeline {
                 echo "Creating Virtual Environment and installing dependencies..."
                 // Creates a local 'venv' folder and installs requirements [cite: 5, 6]
                 sh '''
-                    python3 -m venv venv
-                    ./venv/bin/pip install -r requirements.txt
-                '''
+            python3 -m venv venv
+            # Point to the file inside the iot-testbed folder
+            ./venv/bin/pip install -r iot-testbed/requirements.txt
+        '''
             }
         }
 
