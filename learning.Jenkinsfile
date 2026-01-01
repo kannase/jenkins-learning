@@ -12,7 +12,7 @@ pipeline {
             steps {
                 echo "Installing Python dependencies from requirements.txt..."
                 // Ensures your worker has paho-mqtt and pytest
-                sh 'pip install --user -r requirements.txt'
+                sh 'python3 -m pip install --user -r requirements.txt'
             }
         }
 
