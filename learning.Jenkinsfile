@@ -1,10 +1,9 @@
 pipeline {
-    agent {
-        label 'worker-1'
-    }
+    agent any
 
     environment {
         // Using the internal Podman gateway to find the Mosquitto container
+		DOCKER_HOST = 'tcp://host.containers.internal:2375'
         MQTT_BROKER = 'host.containers.internal'
     }
 
@@ -12,12 +11,12 @@ pipeline {
         stage('1. Environment Setup') {
             steps {
                 echo "Creating Virtual Environment and installing dependencies..."
-                // Creates a local 'venv' folder and installs requirements [cite: 5, 6]
+                git url: 'https://github.com/kannase/iot-testbed.git', branch: 'main'
+                
                 sh '''
-            python3 -m venv venv
-            # Point to the file inside the iot-testbed folder
-            ./venv/bin/pip install -r iot-testbed/requirements.txt
-        '''
+                    python3 -m venv venv
+                    ./venv/bin/pip install -r requirements.txt
+                '''
             }
         }
 
@@ -44,7 +43,7 @@ pipeline {
                     steps {
                         echo "Running Pytest from subfolder..."
                         // Points to the exact folder: iot-testbed/tests/pytest 
-                        sh "./venv/bin/python3 -m pytest iot-testbed/tests/pytest --junitxml=results.xml"
+                        sh "./venv/bin/python3 -m pytest tests/pytest --junitxml=results.xml"
                     }
                 }
             }
