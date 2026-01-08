@@ -22,9 +22,15 @@ pipeline {
 
         stage('2. Provision Broker') {
             steps {
-                echo "Ensuring Mosquitto Broker is running..."
-                // This starts the broker container using the podman installed in your agent
-                sh 'podman run -d --name mqtt-broker -p 1883:1883 eclipse-mosquitto || true'
+			       // 1. Remove any old container with this name (even if it's already stopped)
+                   sh 'podman rm -f mosquitto || true'
+                   echo "Ensuring Mosquitto Broker is running..."
+                
+				  // 2. Start the new broker with the correct flags and full image path
+                  sh 'podman run -d --name mosquitto -p 1883:1883 docker.io/library/eclipse-mosquitto mosquitto --allow-anonymous --listener 1883'
+        
+                  // 3. Give the broker a moment to initialize before the tests start
+                  sh 'sleep 3'
             }
         }
 
