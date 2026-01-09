@@ -1,9 +1,14 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.13'
+            args '--network iot-network' // This connects the test environment to the broker
+        }
+    }
 
     environment {
-        // Use the gateway IP so the Jenkins container can find your Windows host
-        MQTT_BROKER = '172.29.192.1' 
+        // Podman resolves 'mosquitto' to the container IP automatically
+        MQTT_BROKER = 'mosquitto'
     }
 
     stages {
@@ -36,12 +41,12 @@ pipeline {
                 }
             }
         }
-    }
+    } // End of stages
 
-    post {
+    post { // This block is now correctly placed inside the pipeline
         always {
             echo "Generating Test Reports..." 
             junit 'results.xml' 
         }
     }
-}
+} // End of pipeline
