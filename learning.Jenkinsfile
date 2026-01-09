@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Use the gateway IP so the Jenkins container can find your Windows host
-        MQTT_BROKER = '10.88.0.1' 
+        MQTT_BROKER = '172.29.192.1' 
     }
 
     stages {
