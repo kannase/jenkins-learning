@@ -1,51 +1,39 @@
 pipeline {
-    agent {
-        label 'iot-runner' // This matches the label you just gave to the built-in node
-    }
-    environment {
-        // Podman resolves 'mosquitto' to the container IP automatically
-        MQTT_BROKER = 'mosquitto'
-    }
-
+    agent any
     stages {
-        stage('1. Environment Setup') {
+        stage('Setup') {
             steps {
-                echo "Creating Virtual Environment and installing dependencies..." 
-                git url: 'https://github.com/kannase/iot-testbed.git', branch: 'main' 
-                sh '''
-                    python3 -m venv venv
-                    ./venv/bin/pip install -r requirements.txt 
-                ''' 
+                sh 'python3 -m venv venv'
+                sh './venv/bin/pip install paho-mqtt pytest'
             }
         }
-
-        stage('2. Integration Testing') {
-            parallel { 
-                stage('Device Simulation') {
-                    steps {
-                        echo "Starting Device Simulator..." 
-						// Give the network and broker a moment to "handshake"
-                        sh "sleep 5"
-                        timeout(time: 1, unit: 'MINUTES') { 
-                            sh "./venv/bin/python3 simulator/iot_device_simulator.py --broker ${env.MQTT_BROKER}" 
-                        }
-                    }
-                }
-                stage('Pytest Logic') {
-                    steps {
-                        echo "Waiting for simulator to stabilize..."
-                        sh "sleep 10" // Wait for the simulator to actually start sending data
-                        sh "./venv/bin/python3 -m pytest tests/pytest --junitxml=results.xml" 
+        stage('Integration Test') {
+            steps {
+                script {
+                    // 1. Start simulator in background and save its Process ID (PID)
+                    // The '&' is the magic that makes it run in the background
+                    sh "python3 simulator/iot_device_simulator.py --broker mosquitto & echo \$! > sim.pid"
+                    
+                    try {
+                        echo "Simulator started in background. Waiting for data..."
+                        sleep 10
+                        
+                        // 2. Run the tests
+                        sh "./venv/bin/python3 -m pytest tests/pytest --junitxml=results.xml"
+                        
+                    } finally {
+                        // 3. THE CLEANUP: This runs even if tests fail!
+                        echo "Killing the simulator process..."
+                        sh "kill \$(cat sim.pid) || true"
+                        sh "rm sim.pid"
                     }
                 }
             }
-        }
-    } // End of stages
-
-    post { // This block is now correctly placed inside the pipeline
-        always {
-            echo "Generating Test Reports..." 
-            junit 'results.xml' 
         }
     }
-} // End of pipeline
+    post {
+        always {
+            junit 'results.xml'
+        }
+    }
+}
