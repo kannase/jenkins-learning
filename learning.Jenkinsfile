@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         // Global variables for the whole pipeline 
-        DOCKER_HOST = 'tcp://host.containers.internal:2375'
-        MQTT_BROKER = 'host.containers.internal'
+        DOCKER_HOST = 'tcp://10.88.0.1:2375'
+        MQTT_BROKER = '10.88.0.1'
     }
 
     stages {
@@ -22,8 +22,8 @@ pipeline {
         stage('2. Provision Broker') {
             steps {
                 // Remote control your laptop's Podman engine 
-                sh 'podman --url tcp://host.containers.internal:2375 rm -f mosquitto || true'
-                sh 'podman --url tcp://host.containers.internal:2375 run -d --name mosquitto -p 1883:1883 docker.io/library/eclipse-mosquitto mosquitto --allow-anonymous --listener 1883' 
+                sh 'podman --url tcp://10.88.0.1:2375 rm -f mosquitto || true'
+                sh 'podman --url tcp://10.88.0.1:2375 run -d --name mosquitto -p 1883:1883 docker.io/library/eclipse-mosquitto mosquitto --allow-anonymous --listener 1883' 
                 sh 'sleep 3'
             }
         }
@@ -55,7 +55,7 @@ pipeline {
         }
         cleanup {
             echo "Cleaning up containers..."
-            sh 'podman --url tcp://host.containers.internal:2375 rm -f mosquitto || true' 
+            sh 'podman --url tcp://10.88.0.1:2375 rm -f mosquitto || true' 
         }
     }
 }
