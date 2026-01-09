@@ -40,7 +40,7 @@ pipeline {
 
     post {
         always {
-            echo1 "Generating Test Reports..." 
+            echo "Generating Test Reports..." 
             junit 'results.xml' 
         }
     }
