@@ -13,7 +13,7 @@ pipeline {
             steps {
                 script {
                     // Start simulator in background and save PID
-                    sh "python3 simulator/iot_device_simulator.py --broker mosquitto & echo \$! > sim.pid"
+                     sh "./venv/bin/python3 simulator/iot_device_simulator.py --broker mosquitto & echo \$! > sim.pid"
                     
                     try {
                         echo "Simulator started in background. Waiting for data..."
