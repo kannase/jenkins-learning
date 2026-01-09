@@ -24,6 +24,8 @@ pipeline {
                 stage('Device Simulation') {
                     steps {
                         echo "Starting Device Simulator..." 
+						// Give the network and broker a moment to "handshake"
+                        sh "sleep 5"
                         timeout(time: 1, unit: 'MINUTES') { 
                             sh "./venv/bin/python3 simulator/iot_device_simulator.py --broker ${env.MQTT_BROKER}" 
                         }
@@ -31,7 +33,8 @@ pipeline {
                 }
                 stage('Pytest Logic') {
                     steps {
-                        echo "Running Pytest..." 
+                        echo "Waiting for simulator to stabilize..."
+                        sh "sleep 10" // Wait for the simulator to actually start sending data
                         sh "./venv/bin/python3 -m pytest tests/pytest --junitxml=results.xml" 
                     }
                 }
