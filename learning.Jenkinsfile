@@ -1,11 +1,7 @@
 pipeline {
     agent {
-        docker {
-            image 'python:3.13'
-            args '--network iot-network' // This connects the test environment to the broker
-        }
+        label 'iot-runner' // This matches the label you just gave to the built-in node
     }
-
     environment {
         // Podman resolves 'mosquitto' to the container IP automatically
         MQTT_BROKER = 'mosquitto'
